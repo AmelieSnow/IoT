@@ -1,0 +1,30 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure(2) do |config|
+  config.vm.define "asenaudS" do |server|
+    config.vm.box = "ubuntu/bionic64"  # Choisir une box Ubuntu de base
+    #config.vm.box_url = REDACTED
+    config.vm.define "asenaudS" do |control|
+      control.vm.hostname = "asenaudS"
+      control.vm.network "private_network", ip: "192.168.56.110"
+
+    end
+    #server.vm.network "private_network", type: "dhcp", virtualbox__intnet: true
+    #server.vm.network "private_network", type: "static", ip: "192.168.56.110"  # Adresse IP pour Server
+    server.vm.provider "virtualbox" do |vb|
+      vb.memory = "512"  # Limiter la mémoire
+      vb.cpus = 1        # Limiter le CPU
+    end
+    server.vm.hostname = "asenaudS"  # Nom de la machine
+
+    #draft pour la coonection SSH
+    #server.ssh.insert_key = false
+    #server.vm.provision "shell", inline: <<-SHELL
+    #  mkdir -p ~/.ssh
+    #  echo "ssh-rsa YOUR_SSH_PUBLIC_KEY_HERE" > ~/.ssh/authorized_keys
+    #SHELL
+
+    #control.vm.provision "shell", path: REDACTED
+  end
+end
