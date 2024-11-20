@@ -2,29 +2,44 @@
 # vi: set ft=ruby :
 
 Vagrant.configure(2) do |config|
-  config.vm.define "asenaudS" do |server|
-    config.vm.box = "ubuntu/bionic64"  # Choisir une box Ubuntu de base
-    #config.vm.box_url = REDACTED
-    config.vm.define "asenaudS" do |control|
-      control.vm.hostname = "asenaudS"
-      control.vm.network "private_network", ip: "192.168.56.110"
+  # Config pour chaque vm
+  config.vm.box = "ubuntu/bionic64"  # box ubuntu 18.04 LTS Bionic Beaver
+  # Alternative possible ubuntu/jammy64 => 22.04.5 LTS Jammy Jellyfish
+  # Ou potentiellement regardé pour un os plus léger genre alpine ?
 
-    end
+  # Config pour le serveur
+  config.vm.define "asenaudS" do |server|
+    server.vm.hostname = "asenaudS"  # Nom de la machine
+    server.vm.network "private_network", ip: "192.168.56.110"
+
     #server.vm.network "private_network", type: "dhcp", virtualbox__intnet: true
     #server.vm.network "private_network", type: "static", ip: "192.168.56.110"  # Adresse IP pour Server
     server.vm.provider "virtualbox" do |vb|
-      vb.memory = "512"  # Limiter la mémoire
+      vb.memory = "2048"  # Limiter la mémoire
       vb.cpus = 1        # Limiter le CPU
     end
-    server.vm.hostname = "asenaudS"  # Nom de la machine
-
+    server.vm.provision "shell", path: "./server_install.sh" # Installation de k3s dans la vm
+  
     #draft pour la coonection SSH
     #server.ssh.insert_key = false
     #server.vm.provision "shell", inline: <<-SHELL
     #  mkdir -p ~/.ssh
     #  echo "ssh-rsa YOUR_SSH_PUBLIC_KEY_HERE" > ~/.ssh/authorized_keys
-    #SHELL
+  end
+  #config.vm.box_url = REDACTED
+  config.vm.define "asenaudSW" do |control|
+    control.vm.hostname = "asenaudSW"
+    control.vm.network "private_network", ip: "192.168.56.111"
 
+    control.vm.provider "virtualbox" do |vb|
+      vb.memory = "2048"  # Limiter la mémoire
+      vb.cpus = 1        # Limiter le CPU
+    end
+    #SHELL
     #control.vm.provision "shell", path: REDACTED
+    control.vm.provision "shell", path: "./worker_install.sh"
+    # Le script installe k3s et on passe le token avec le flag -t
+    # On récupère le token depuis le dossier partagé vagrant dans lequel
+    # On a cat le node token dans un fichier txt
   end
 end
